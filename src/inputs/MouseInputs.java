@@ -1,28 +1,30 @@
 package inputs;
 
+import main.Game;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import gamestates.Gamestate;
+import gamestates.Playing;
 import main.GamePanel;
 
 public class MouseInputs implements MouseListener, MouseMotionListener {
 
+	private Playing playing;
+	private Game game;
 	private GamePanel gamePanel;
 
-	public MouseInputs(GamePanel gamePanel) {
-		this.gamePanel = gamePanel;
+	public MouseInputs(GamePanel gamePanel, Game game) {
+		this.gamePanel = gamePanel; this.game = game;
 	}
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
 		switch (Gamestate.state) {
-		case PLAYING:
-			gamePanel.getGame().getPlaying().mouseDragged(e);
+		case LEVEL1:
 			break;
-		case OPTIONS:
-			gamePanel.getGame().getGameOptions().mouseDragged(e);
+		case LEVEL2:
 			break;
 		default:
 			break;
@@ -37,11 +39,9 @@ public class MouseInputs implements MouseListener, MouseMotionListener {
 		case MENU:
 			gamePanel.getGame().getMenu().mouseMoved(e);
 			break;
-		case PLAYING:
-			gamePanel.getGame().getPlaying().mouseMoved(e);
+		case LEVEL1:
 			break;
-		case OPTIONS:
-			gamePanel.getGame().getGameOptions().mouseMoved(e);
+		case LEVEL2:
 			break;
 		default:
 			break;
@@ -53,8 +53,13 @@ public class MouseInputs implements MouseListener, MouseMotionListener {
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		switch (Gamestate.state) {
-		case PLAYING:
-			gamePanel.getGame().getPlaying().mouseClicked(e);
+		case LEVEL1:
+			game.setVisible();
+			playing = new Playing(10);
+			break;
+		case LEVEL2:
+			game.setVisible();
+			playing = new Playing(15);
 			break;
 		default:
 			break;
@@ -69,11 +74,13 @@ public class MouseInputs implements MouseListener, MouseMotionListener {
 		case MENU:
 			gamePanel.getGame().getMenu().mousePressed(e);
 			break;
-		case PLAYING:
-			gamePanel.getGame().getPlaying().mousePressed(e);
+		case LEVEL1:
+			game.setVisible();
+			playing = new Playing(10);
 			break;
-		case OPTIONS:
-			gamePanel.getGame().getGameOptions().mousePressed(e);
+		case LEVEL2:
+			game.setVisible();
+			playing = new Playing(15);
 			break;
 		default:
 			break;
@@ -88,11 +95,13 @@ public class MouseInputs implements MouseListener, MouseMotionListener {
 		case MENU:
 			gamePanel.getGame().getMenu().mouseReleased(e);
 			break;
-		case PLAYING:
-			gamePanel.getGame().getPlaying().mouseReleased(e);
+		case LEVEL1:
+			game.setVisible();
+			playing = new Playing(10);
 			break;
-		case OPTIONS:
-			gamePanel.getGame().getGameOptions().mouseReleased(e);
+		case LEVEL2:
+			game.setVisible();
+			playing = new Playing(15);
 			break;
 		default:
 			break;
@@ -103,7 +112,7 @@ public class MouseInputs implements MouseListener, MouseMotionListener {
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
+		
 
 	}
 

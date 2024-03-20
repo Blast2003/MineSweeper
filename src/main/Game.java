@@ -2,12 +2,11 @@ package main;
 
 import java.awt.Graphics;
 
-import gamestates.GameOptions;
 import gamestates.Gamestate;
 import gamestates.Menu;
 import gamestates.Playing;
-import ui.AudioOptions;
-import utilz.LoadSave;
+
+
 
 public class Game implements Runnable {
 
@@ -17,13 +16,12 @@ public class Game implements Runnable {
 	private final int FPS_SET = 120;
 	private final int UPS_SET = 200;
 
-	private Playing playing;
+	
 	private Menu menu;
-	private GameOptions gameOptions;
-	private AudioOptions audioOptions;
+	private Playing playing;
 
 	public final static int TILES_DEFAULT_SIZE = 32;
-	public final static float SCALE = 2f;
+	public final static float SCALE = 1.0f;
 	public final static int TILES_IN_WIDTH = 26;
 	public final static int TILES_IN_HEIGHT = 14;
 	public final static int TILES_SIZE = (int) (TILES_DEFAULT_SIZE * SCALE);
@@ -32,7 +30,6 @@ public class Game implements Runnable {
 
 	public Game() {
 		initClasses();
-
 		gamePanel = new GamePanel(this);
 		gameWindow = new GameWindow(gamePanel);
 		gamePanel.setFocusable(true);
@@ -42,10 +39,7 @@ public class Game implements Runnable {
 	}
 
 	private void initClasses() {
-		audioOptions = new AudioOptions();
 		menu = new Menu(this);
-		playing = new Playing(this);
-		gameOptions = new GameOptions(this);
 	}
 
 	private void startGameLoop() {
@@ -58,11 +52,9 @@ public class Game implements Runnable {
 		case MENU:
 			menu.update();
 			break;
-		case PLAYING:
-			playing.update();
+		case LEVEL1:
 			break;
-		case OPTIONS:
-			gameOptions.update();
+		case LEVEL2:
 			break;
 		case QUIT:
 		default:
@@ -77,11 +69,9 @@ public class Game implements Runnable {
 		case MENU:
 			menu.draw(g);
 			break;
-		case PLAYING:
-			playing.draw(g);
+		case LEVEL1:
 			break;
-		case OPTIONS:
-			gameOptions.draw(g);
+		case LEVEL2:
 			break;
 		default:
 			break;
@@ -133,24 +123,21 @@ public class Game implements Runnable {
 
 	}
 
-	public void windowFocusLost() {
-		if (Gamestate.state == Gamestate.PLAYING)
-			playing.getPlayer().resetDirBooleans();
+	
+	public void setVisible() {
+		gameWindow.setVisible(false);
 	}
+
+	
+	public Playing getPlaying() {
+		return playing;
+	}
+
 
 	public Menu getMenu() {
 		return menu;
 	}
 
-	public Playing getPlaying() {
-		return playing;
-	}
 
-	public GameOptions getGameOptions() {
-		return gameOptions;
-	}
 
-	public AudioOptions getAudioOptions() {
-		return audioOptions;
-	}
 }

@@ -23,7 +23,6 @@ public class GameOptions extends State implements Statemethods {
 		super(game);
 		loadImgs();
 		loadButton();
-		audioOptions = game.getAudioOptions();
 	}
 
 	private void loadButton() {
