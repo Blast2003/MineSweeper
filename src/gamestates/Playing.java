@@ -28,7 +28,9 @@ public class Playing {
     private ArrayList<MineTile> UndoableTiles = new ArrayList<MineTile>();
 
     int tilesClicked = 0; //goal is to click all tiles except the ones containing mines
+
     boolean gameOver = false;
+
     int remaningUndo = 3;
 
     	public Playing(int mineCount, int numR, int numC) 
@@ -139,7 +141,7 @@ public class Playing {
             int randR = random.nextInt(numRows); //0-7
             int randC = random.nextInt(numCols);
 
-            while (!(randC < r-1 || randC > r+1) && !(randR < r-1 || randR > r +1)) {  
+            while (!(randC < c-1 || randC > c+1) && !(randR < r-1 || randR > r +1)) {  
                 //Guarantee first tile and all tiles near it will be empty
                 randR = random.nextInt(numRows); 
                 randC = random.nextInt(numCols);
@@ -242,28 +244,23 @@ public class Playing {
 	}
 
     public void undoLastClick() {
-        if (isFirstClick) {
-            return;
-        }
-
-        remaningUndo--;
-        for (MineTile t : UndoableTiles) {
-            tilesClicked--;
-            t.setText("");
-            t.setEnabled(true);
-        }
-
-        boolean over = false;
-        for (int y = 0; y < numCols; y++) {
-            for (int x = 0; x < numCols; x++) {
-                if (board[x][y].getText() == "💣") {
-                    over = true;
+            remaningUndo--;
+            for (MineTile t : UndoableTiles) {
+                tilesClicked--;
+                t.setText("");
+                t.setEnabled(true);
+            }
+    
+            boolean over = false;
+            for (int y = 0; y < numCols; y++) {
+                for (int x = 0; x < numCols; x++) {
+                    if (board[x][y].getText() == "💣") {
+                        over = true;
+                    }
                 }
             }
-        }
-
-        if (over) revealMines();
-
-    }
     
+            if (over) revealMines();
+    }
+
 }
