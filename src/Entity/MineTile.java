@@ -5,7 +5,6 @@ import javax.swing.JButton;
 public class MineTile extends JButton {
 	int r;
     int c;
-	boolean undoable = false;
 
     public MineTile(int r, int c) {
         this.r = r;
@@ -28,8 +27,5 @@ public class MineTile extends JButton {
 		this.c = c;
 	}
     
-    public void setUndoable(boolean b) {
-		this.undoable = b;
-	}
-    
+
 }
