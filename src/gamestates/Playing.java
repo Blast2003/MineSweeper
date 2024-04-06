@@ -11,10 +11,7 @@ import Entity.MineTile;
 public class Playing {
 
     int tileSize = 60;
-    int numRows = 10;
-    int numCols = numRows;
-    int boardWidth = numCols * tileSize;
-    int boardHeight = numRows * tileSize;
+    int numRows, numCols, boardWidth, boardHeight;
     
     JFrame frame = new JFrame("Minesweeper");
     JLabel textLabel = new JLabel();
@@ -23,14 +20,26 @@ public class Playing {
 
     private int mineCount;
 
-	private MineTile[][] board = new MineTile[numRows][numCols];
+    private boolean isFirstClick;
+
+	private MineTile[][] board;
     private ArrayList<MineTile> mineList;
     private Random random = new Random();
+    private ArrayList<MineTile> UndoableTiles = new ArrayList<MineTile>();
 
     int tilesClicked = 0; //goal is to click all tiles except the ones containing mines
     boolean gameOver = false;
+    int remaningUndo = 3;
 
-    	public Playing(int mineCount) {
+    	public Playing(int mineCount, int numR, int numC) 
+        {
+        this.numRows = numR;
+        this.numCols = numC;
+        boardWidth = numCols * tileSize;
+        boardHeight = numRows * tileSize;
+        isFirstClick = true;
+        board = new MineTile[numRows][numCols];
+
     	setMineCount(mineCount);
         // frame.setVisible(true);
         frame.setSize(boardWidth, boardHeight);
@@ -62,20 +71,35 @@ public class Playing {
                 tile.setFont(new Font("Arial Unicode MS", Font.PLAIN, 45));
                 // tile.setText("💣");
                 tile.addMouseListener(new MouseAdapter() {
+                    
                     @Override
                     public void mousePressed(MouseEvent e) {
+                        
                         if (gameOver) {
                             return;
                         }
-                        MineTile tile = (MineTile) e.getSource();
 
+                        MineTile tile = (MineTile) e.getSource();
                         //left click
                         if (e.getButton() == MouseEvent.BUTTON1) {
+                            //check if it the first click
+                            if (isFirstClick) {     // if it is, set creat mines
+                                tile.setText("");
+                                setMines(tile.getR(), tile.getC());
+                            }
+
                             if (tile.getText() == "") {
                                 if (mineList.contains(tile)) {
-                                    revealMines();
+                                    if (remaningUndo >0) {
+                                        tile.setText("💣");
+                                        tile.setEnabled(false);
+                                        UndoableTiles.clear(); // clear old list
+                                        UndoableTiles.add(tile); // add tile to list to undo
+                                    }
+                                    else revealMines();
                                 }
                                 else {
+                                    UndoableTiles.clear(); // clear old list
                                     checkMine(tile.getR(), tile.getC());
                                 }
                             }
@@ -89,6 +113,12 @@ public class Playing {
                                 tile.setText("");
                             }
                         }
+
+                        else if (e.getButton() == MouseEvent.BUTTON2) { // Dùng tạm Button 2 (Nút giữa) cho redo
+                            if (remaningUndo > 0) {
+                                undoLastClick();
+                            }
+                        }
                     } 
                 });
 
@@ -99,22 +129,29 @@ public class Playing {
 
         frame.setVisible(true);
 
-        setMines();
+        // setMines();
     }
 
-    void setMines() {
+    void setMines(int r, int c) {
         mineList = new ArrayList<MineTile>();
         int mineLeft = getMineCount();
         while (mineLeft > 0) {
-            int r = random.nextInt(numRows); //0-7
-            int c = random.nextInt(numCols);
+            int randR = random.nextInt(numRows); //0-7
+            int randC = random.nextInt(numCols);
 
-            MineTile tile = board[r][c]; 
+            while (!(randC < r-1 || randC > r+1) && !(randR < r-1 || randR > r +1)) {  
+                //Guarantee first tile and all tiles near it will be empty
+                randR = random.nextInt(numRows); 
+                randC = random.nextInt(numCols);
+            }
+
+            MineTile tile = board[randR][randC]; 
             if (!mineList.contains(tile)) {
                 mineList.add(tile);
                 mineLeft -= 1;
             }
         }
+        isFirstClick = false; // set first click to false to start the game
     }
 
     void revealMines() {
@@ -136,7 +173,10 @@ public class Playing {
         if (!tile.isEnabled()) {
             return;
         }
+        //Disable mine and add mine to list for undo operation
         tile.setEnabled(false);
+        UndoableTiles.add(tile);
+
         // + the number of empty tile
         tilesClicked += 1;
 
@@ -200,5 +240,30 @@ public class Playing {
 	public int getMineCount() {
 		return mineCount;
 	}
+
+    public void undoLastClick() {
+        if (isFirstClick) {
+            return;
+        }
+
+        remaningUndo--;
+        for (MineTile t : UndoableTiles) {
+            tilesClicked--;
+            t.setText("");
+            t.setEnabled(true);
+        }
+
+        boolean over = false;
+        for (int y = 0; y < numCols; y++) {
+            for (int x = 0; x < numCols; x++) {
+                if (board[x][y].getText() == "💣") {
+                    over = true;
+                }
+            }
+        }
+
+        if (over) revealMines();
+
+    }
     
 }

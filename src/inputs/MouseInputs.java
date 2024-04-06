@@ -52,19 +52,19 @@ public class MouseInputs implements MouseListener, MouseMotionListener {
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		switch (Gamestate.state) {
-		case LEVEL1:
-			game.setVisible();
-			playing = new Playing(10);
-			break;
-		case LEVEL2:
-			game.setVisible();
-			playing = new Playing(15);
-			break;
-		default:
-			break;
+		// switch (Gamestate.state) {
+		// case LEVEL1:
+		// 	game.setVisible();
+		// 	playing = new Playing(10,8,8);
+		// 	break;
+		// case LEVEL2:
+		// 	game.setVisible();
+		// 	playing = new Playing(25,10,10);
+		// 	break;
+		// default:
+		// 	break;
 
-		}
+		// }
 
 	}
 
@@ -75,12 +75,12 @@ public class MouseInputs implements MouseListener, MouseMotionListener {
 			gamePanel.getGame().getMenu().mousePressed(e);
 			break;
 		case LEVEL1:
-			game.setVisible();
-			playing = new Playing(10);
+			// game.setVisible();
+			// playing = new Playing(10,8,8);
 			break;
 		case LEVEL2:
-			game.setVisible();
-			playing = new Playing(15);
+			// game.setVisible();
+			// playing = new Playing(25,10,10);
 			break;
 		default:
 			break;
@@ -97,11 +97,11 @@ public class MouseInputs implements MouseListener, MouseMotionListener {
 			break;
 		case LEVEL1:
 			game.setVisible();
-			playing = new Playing(10);
+			playing = new Playing(10,8,8);
 			break;
 		case LEVEL2:
 			game.setVisible();
-			playing = new Playing(15);
+			playing = new Playing(25,10,10);
 			break;
 		default:
 			break;
