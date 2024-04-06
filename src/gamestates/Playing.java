@@ -246,8 +246,9 @@ public class Playing {
     public void undoLastClick() {
             remaningUndo--;
             for (MineTile t : UndoableTiles) {
-                tilesClicked--;
-                t.setText("");
+
+                if (t.getText() == "💣" ) t.setText(""); // mine : hides it
+                else  tilesClicked--; // not mine: reduces the tileClicked counter
                 t.setEnabled(true);
             }
     
