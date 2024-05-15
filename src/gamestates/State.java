@@ -3,6 +3,7 @@ package gamestates;
 import java.awt.event.MouseEvent;
 
 import main.Game;
+import ui.GameOverButtons;
 import ui.MenuButton;
 
 public class State {
@@ -17,6 +18,9 @@ public class State {
 		return mb.getBounds().contains(e.getX(), e.getY());
 	}
 	
+	public boolean isIn2(MouseEvent e, GameOverButtons mb) {
+		return mb.getBounds().contains(e.getX(), e.getY());
+	}
 
 	public Game getGame() {
 		return game;

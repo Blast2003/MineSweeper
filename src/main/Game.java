@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import gamestates.Gamestate;
 import gamestates.Menu;
 import gamestates.Playing;
+import ui.GameOver;
 
 
 
@@ -15,7 +16,6 @@ public class Game implements Runnable {
 	private Thread gameThread;
 	private final int FPS_SET = 120;
 	private final int UPS_SET = 200;
-
 	
 	private Menu menu;
 	private Playing playing;
@@ -34,12 +34,14 @@ public class Game implements Runnable {
 		gameWindow = new GameWindow(gamePanel);
 		gamePanel.setFocusable(true);
 		gamePanel.requestFocus();
-
+		
 		startGameLoop();
+		
 	}
 
 	private void initClasses() {
 		menu = new Menu(this);
+		
 	}
 
 	private void startGameLoop() {

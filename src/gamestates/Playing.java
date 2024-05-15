@@ -5,10 +5,14 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Random;
 import javax.swing.*;
+import java.awt.Graphics;
 
 import Entity.MineTile;
+import main.Game;
+import ui.GameOver;
+import ui.GameWin;
 
-public class Playing {
+public class Playing implements Statemethods{
 
     int tileSize = 60;
     int numRows, numCols, boardWidth, boardHeight;
@@ -21,20 +25,28 @@ public class Playing {
     private int mineCount;
 
     private boolean isFirstClick;
-
+    
+    private int bombFound = 0;
 	private MineTile[][] board;
     private ArrayList<MineTile> mineList;
     private Random random = new Random();
     private ArrayList<MineTile> UndoableTiles = new ArrayList<MineTile>();
-
+    private GameOver gameOverOverlay;
+    private GameWin gameWin;
     int tilesClicked = 0; //goal is to click all tiles except the ones containing mines
 
     boolean gameOver = false;
+    boolean gameWining  = false ;
+    
 
     int remaningUndo = 3;
 
     	public Playing(int mineCount, int numR, int numC) 
         {
+    	gameWin = new GameWin(this);
+    	gameOverOverlay = new GameOver(this);	
+    	//boardPanel.addMouseListener( gameOverOverlay);
+        boardPanel.addMouseListener( gameWin);
         this.numRows = numR;
         this.numCols = numC;
         boardWidth = numCols * tileSize;
@@ -62,6 +74,7 @@ public class Playing {
         boardPanel.setLayout(new GridLayout(numRows, numCols)); //8x8
         // boardPanel.setBackground(Color.green);
         frame.add(boardPanel);
+       
 
         for (int r = 0; r < numRows; r++) {
             for (int c = 0; c < numCols; c++) {
@@ -92,7 +105,8 @@ public class Playing {
 
                             if (tile.getText() == "") {
                                 if (mineList.contains(tile)) {
-                                    if (remaningUndo >0) {
+                                    if (bombFound < remaningUndo) {
+                                    	bombFound++;
                                         tile.setText("💣");
                                         tile.setEnabled(false);
                                         UndoableTiles.clear(); // clear old list
@@ -133,7 +147,12 @@ public class Playing {
 
         // setMines();
     }
-
+  
+    	
+    public void setGameOver(boolean gameOver) {
+    	this.gameOver = gameOver ;
+    }
+    	
     void setMines(int r, int c) {
         mineList = new ArrayList<MineTile>();
         int mineLeft = getMineCount();
@@ -164,9 +183,12 @@ public class Playing {
 
         gameOver = true;
         textLabel.setText("Game Over!");
+        Graphics g = boardPanel.getGraphics();
+        gameOverOverlay.draw(g);
     }
 
-    void checkMine(int r, int c) {
+
+	void checkMine(int r, int c) {
         if (r < 0 || r >= numRows || c < 0 || c >= numCols) {
             return;
         }
@@ -220,8 +242,11 @@ public class Playing {
         }
 
         if (tilesClicked == numRows * numCols - mineList.size()) {
-            gameOver = true;
+           // gameOver = true;
             textLabel.setText("Mines Cleared!");
+            Graphics g = boardPanel.getGraphics();
+            gameWin.draw(g);
+            gameWining = true ;
         }
     }
 
@@ -245,6 +270,7 @@ public class Playing {
 
     public void undoLastClick() {
             remaningUndo--;
+            if(bombFound > 0) bombFound--;
             for (MineTile t : UndoableTiles) {
 
                 if (t.getText() == "💣" ) t.setText(""); // mine : hides it
@@ -263,5 +289,79 @@ public class Playing {
     
             if (over) revealMines();
     }
-
+    
+   public void resetLose() {
+	   for (int r = 0; r < numRows; r++) {
+	        for (int c = 0; c < numCols; c++) {
+	            board[r][c].setText(""); // Clear any text on the tiles
+	            board[r][c].setEnabled(true); // Re-enable all tiles
+	        }
+	    }
+   }
+    
+   public void resetWin() {
+	   for (int r = 0; r < numRows; r++) {
+	        for (int c = 0; c < numCols; c++) {
+	            board[r][c].setText(""); // Clear any text on the tiles
+	            board[r][c].setEnabled(true); // Re-enable all tiles
+	        }
+	    }
+   } 
+   @Override
+   public void update() {
+	   if(gameOver) {
+		   gameOverOverlay.update();
+	   }else if (gameWining) {
+		   gameWin.update();
+	   }
+	   
+   }
+@Override
+public void draw(Graphics g) {
+	// TODO Auto-generated method stub
+	
 }
+@Override
+public void mouseClicked(MouseEvent e) {
+	// TODO Auto-generated method stub
+	
+}
+@Override
+public void mousePressed(MouseEvent e) {
+	if(gameOver) {
+		gameOverOverlay.mousePressed(e);
+	}else if(gameWining) {
+		gameWin.mousePressed(e);
+	}
+	
+}
+@Override
+public void mouseReleased(MouseEvent e) {
+	if(gameOver) {
+		gameOverOverlay.mouseReleased(e);
+	}else if(gameWining) {
+		gameWin.mouseReleased(e);
+	}
+	
+}
+@Override
+public void mouseMoved(MouseEvent e) {
+	if(gameOver) {
+		gameOverOverlay.mouseMoved(e);
+	}else if(gameWining) {
+		gameWin.mouseMoved(e);
+	}
+	
+}
+@Override
+public void keyPressed(KeyEvent e) {
+	// TODO Auto-generated method stub
+	
+}
+@Override
+public void keyReleased(KeyEvent e) {
+	// TODO Auto-generated method stub
+	
+}
+    
+    }
