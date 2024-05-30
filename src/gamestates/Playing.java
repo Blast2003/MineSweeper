@@ -1,14 +1,15 @@
 package gamestates;
-
+import java.util.Queue;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Random;
+import java.util.Stack;
+
 import javax.swing.*;
-import java.awt.Graphics;
 
 import Entity.MineTile;
-import main.Game;
 import ui.GameOver;
 import ui.GameWin;
 
@@ -147,12 +148,7 @@ public class Playing implements Statemethods{
 
         // setMines();
     }
-  
-    	
-    public void setGameOver(boolean gameOver) {
-    	this.gameOver = gameOver ;
-    }
-    	
+
     void setMines(int r, int c) {
         mineList = new ArrayList<MineTile>();
         int mineLeft = getMineCount();
@@ -187,88 +183,198 @@ public class Playing implements Statemethods{
         gameOverOverlay.draw(g);
     }
 
+    
+    // Using Stack => O(N)
+//    private void checkMine(int r, int c) {
+//        if (isOutOfBounds(r, c)) return;
+//
+//        Stack<int[]> stack = new Stack<>();
+//        stack.push(new int[]{r, c});
+//
+//        boolean[][] visited = new boolean[numRows][numCols];
+//
+//        while (!stack.isEmpty()) {
+//            int[] pos = stack.pop();
+//            int currentR = pos[0];
+//            int currentC = pos[1];
+//
+//            if (isOutOfBounds(currentR, currentC) || visited[currentR][currentC]) continue;
+//
+//            MineTile tile = board[currentR][currentC];
+//            if (!tile.isEnabled()) continue;
+//
+//            tile.setEnabled(false);
+//            UndoableTiles.add(tile);
+//            tilesClicked++;
+//            visited[currentR][currentC] = true;
+//
+//            int minesFound = countAdjacentMines(currentR, currentC);
+//            if (minesFound > 0) {
+//                tile.setText(Integer.toString(minesFound));
+//            } else {
+//                tile.setText("");
+//                for (int[] dir : directions) {
+//                    stack.push(new int[]{currentR + dir[0], currentC + dir[1]});
+//                }
+//            }
+//
+//            if (tilesClicked == numRows * numCols - mineList.size()) {
+//                textLabel.setText("Mines Cleared!");
+//                gameWining = true;
+//                Graphics g = boardPanel.getGraphics();
+//                gameWin.draw(g);
+//            }
+//        }
+//    }
+    
+    
+    // Using queue like Breadth-first search => O(N)
+    //BFS approach is generally preferable for large-scale applications due to its robustness against stack overflow, 
+    //while the recursive approach might be suitable for simpler, smaller-scale problems.
+    public void checkMine(int r, int c) {
+        if (isOutOfBounds(r, c)) return;
 
-	void checkMine(int r, int c) {
-        if (r < 0 || r >= numRows || c < 0 || c >= numCols) {
-            return;
-        }
+        Queue<int[]> queue = new LinkedList<>();
+        queue.add(new int[]{r, c});
 
-        MineTile tile = board[r][c];
-        if (!tile.isEnabled()) {
-            return;
-        }
-        //Disable mine and add mine to list for undo operation
-        tile.setEnabled(false);
-        UndoableTiles.add(tile);
+        while (!queue.isEmpty()) {
+            int[] position = queue.poll();
+            int row = position[0];
+            int col = position[1];
 
-        // + the number of empty tile
-        tilesClicked += 1;
+            if (isOutOfBounds(row, col)) continue;
 
-        int minesFound = 0;
+            MineTile tile = board[row][col];
+            if (!tile.isEnabled()) continue;
 
-        //top 3
-        minesFound += countMine(r-1, c-1);  //top left
-        minesFound += countMine(r-1, c);    //top
-        minesFound += countMine(r-1, c+1);  //top right
+            tile.setEnabled(false);
+            UndoableTiles.add(tile);
+            tilesClicked++;
 
-        //left and right
-        minesFound += countMine(r, c-1);    //left
-        minesFound += countMine(r, c+1);    //right
+            int minesFound = countAdjacentMines(row, col);
+            if (minesFound > 0) {
+                tile.setText(Integer.toString(minesFound));
+            } else {
+                tile.setText("");
 
-        //bottom 3
-        minesFound += countMine(r+1, c-1);  //bottom left
-        minesFound += countMine(r+1, c);    //bottom
-        minesFound += countMine(r+1, c+1);  //bottom right
+                // Add adjacent tiles to the queue for further processing
+                int[][] directions = {
+                    {-1, -1}, {-1, 0}, {-1, 1},
+                    {0, -1}, {0, 1},
+                    {1, -1}, {1, 0}, {1, 1}
+                };
 
-        if (minesFound > 0) {
-            tile.setText(Integer.toString(minesFound));
-        }
-        else {
-            tile.setText("");
-            
-            //top 3
-            checkMine(r-1, c-1);    //top left
-            checkMine(r-1, c);      //top
-            checkMine(r-1, c+1);    //top right
+                for (int[] dir : directions) {
+                    int newRow = row + dir[0];
+                    int newCol = col + dir[1];
+                    if (!isOutOfBounds(newRow, newCol) && board[newRow][newCol].isEnabled()) {
+                        queue.add(new int[]{newRow, newCol});
+                    }
+                }
+            }
 
-            //left and right
-            checkMine(r, c-1);      //left
-            checkMine(r, c+1);      //right
-
-            //bottom 3
-            checkMine(r+1, c-1);    //bottom left
-            checkMine(r+1, c);      //bottom
-            checkMine(r+1, c+1);    //bottom right
-        }
-
-        if (tilesClicked == numRows * numCols - mineList.size()) {
-           // gameOver = true;
-            textLabel.setText("Mines Cleared!");
-            Graphics g = boardPanel.getGraphics();
-            gameWin.draw(g);
-            gameWining = true ;
+            if (tilesClicked == numRows * numCols - mineList.size()) {
+                textLabel.setText("Mines Cleared!");
+                gameWining = true;
+                Graphics g = boardPanel.getGraphics();
+                gameWin.draw(g);
+            }
         }
     }
 
-    int countMine(int r, int c) {
-        if (r < 0 || r >= numRows || c < 0 || c >= numCols) {
-            return 0;
+    private boolean isOutOfBounds(int r, int c) {
+        return r < 0 || r >= numRows || c < 0 || c >= numCols;
+    }
+
+    private int countAdjacentMines(int r, int c) {
+        int minesFound = 0;
+        for (int[] dir : directions) {
+            minesFound += countMine(r + dir[0], c + dir[1]);
         }
-        if (mineList.contains(board[r][c])) {
-            return 1;
-        }
+        return minesFound;
+    }
+
+    private int countMine(int r, int c) {
+        if (isOutOfBounds(r, c)) return 0;
+        if (mineList.contains(board[r][c])) return 1;
         return 0;
     }
+
+    private static final int[][] directions = {
+        {-1, -1}, {-1, 0}, {-1, 1},
+        {0, -1}, {0, 1},
+        {1, -1}, {1, 0}, {1, 1}
+    };
     
-    public void setMineCount(int mineCount) {
-		this.mineCount = mineCount;
-	}
+    
+    
+	// Time Complexity: worst case: O(n) with n = total number of titles (column * row)
+    // Space Complexity:worst case: O(n) with n = total number of titles (column * row) => the recursion depth proportional to n
+//	void checkMine(int r, int c) {
+//        if (r < 0 || r >= numRows || c < 0 || c >= numCols) {
+//            return;
+//        }
+//
+//        MineTile tile = board[r][c];
+//        if (!tile.isEnabled()) {
+//            return;
+//        }
+//        //Disable mine and add mine to list for undo operation
+//        tile.setEnabled(false);
+//        UndoableTiles.add(tile);
+//
+//        // + the number of empty tile
+//        tilesClicked += 1;
+//
+//        int minesFound = 0;
+//
+//        //top 3
+//        minesFound += countMine(r-1, c-1);  //top left
+//        minesFound += countMine(r-1, c);    //top
+//        minesFound += countMine(r-1, c+1);  //top right
+//
+//        //left and right
+//        minesFound += countMine(r, c-1);    //left
+//        minesFound += countMine(r, c+1);    //right
+//
+//        //bottom 3
+//        minesFound += countMine(r+1, c-1);  //bottom left
+//        minesFound += countMine(r+1, c);    //bottom
+//        minesFound += countMine(r+1, c+1);  //bottom right
+//
+//        if (minesFound > 0) {
+//            tile.setText(Integer.toString(minesFound));
+//        }
+//        else {
+//            tile.setText("");
+//            
+//            //top 3
+//            checkMine(r-1, c-1);    //top left
+//            checkMine(r-1, c);      //top
+//            checkMine(r-1, c+1);    //top right
+//
+//            //left and right
+//            checkMine(r, c-1);      //left
+//            checkMine(r, c+1);      //right
+//
+//            //bottom 3
+//            checkMine(r+1, c-1);    //bottom left
+//            checkMine(r+1, c);      //bottom
+//            checkMine(r+1, c+1);    //bottom right
+//        }
+//
+//        if (tilesClicked == numRows * numCols - mineList.size()) {
+//           
+//            textLabel.setText("Mines Cleared!");
+//            Graphics g = boardPanel.getGraphics();
+//            gameWin.draw(g);
+//            gameWining = true ;
+//        }
+//    }
 
-	public int getMineCount() {
-		return mineCount;
-	}
 
-    public void undoLastClick() {
+
+        public void undoLastClick() {
             remaningUndo--;
             if(bombFound > 0) bombFound--;
             for (MineTile t : UndoableTiles) {
@@ -277,7 +383,7 @@ public class Playing implements Statemethods{
                 else  tilesClicked--; // not mine: reduces the tileClicked counter
                 t.setEnabled(true);
             }
-    
+
             boolean over = false;
             for (int y = 0; y < numCols; y++) {
                 for (int x = 0; x < numCols; x++) {
@@ -286,82 +392,86 @@ public class Playing implements Statemethods{
                     }
                 }
             }
-    
+
             if (over) revealMines();
-    }
+        }
+
+        public void resetLose() {
+        for (int r = 0; r < numRows; r++) {
+            for (int c = 0; c < numCols; c++) {
+                board[r][c].setText(""); // Clear any text on the tiles
+                board[r][c].setEnabled(true); // Re-enable all tiles
+            }
+        }
+        }
+
+        public void resetWin() {
+        for (int r = 0; r < numRows; r++) {
+            for (int c = 0; c < numCols; c++) {
+                board[r][c].setText(""); // Clear any text on the tiles
+                board[r][c].setEnabled(true); // Re-enable all tiles
+            }
+        }
+        } 
+        public void update() {
+        if(gameOver) {
+        gameOverOverlay.update();
+        }else if (gameWining) {
+        gameWin.update();
+        }
+
+        }
+        public void draw(Graphics g) {
+        // TODO Auto-generated method stub
+
+        }
+        public void mouseClicked(MouseEvent e) {
+        // TODO Auto-generated method stub
+
+        }
+        public void mousePressed(MouseEvent e) {
+        if(gameOver) {
+        gameOverOverlay.mousePressed(e);
+        }else if(gameWining) {
+        gameWin.mousePressed(e);
+        }
+
+        }
+        public void mouseReleased(MouseEvent e) {
+        if(gameOver) {
+        gameOverOverlay.mouseReleased(e);
+        }else if(gameWining) {
+        gameWin.mouseReleased(e);
+        }
+
+        }
+        public void mouseMoved(MouseEvent e) {
+        if(gameOver) {
+        gameOverOverlay.mouseMoved(e);
+        }else if(gameWining) {
+        gameWin.mouseMoved(e);
+        }
+
+        }
+        @Override
+        public void keyPressed(KeyEvent e) {
+        // TODO Auto-generated method stub
+
+        }
+        @Override
+        public void keyReleased(KeyEvent e) {
+        // TODO Auto-generated method stub
+
+        }
+	
+	
     
-   public void resetLose() {
-	   for (int r = 0; r < numRows; r++) {
-	        for (int c = 0; c < numCols; c++) {
-	            board[r][c].setText(""); // Clear any text on the tiles
-	            board[r][c].setEnabled(true); // Re-enable all tiles
-	        }
-	    }
-   }
+    public void setMineCount(int mineCount) {
+		this.mineCount = mineCount;
+	}
+
+	public int getMineCount() {
+		return mineCount;
+	}
     
-   public void resetWin() {
-	   for (int r = 0; r < numRows; r++) {
-	        for (int c = 0; c < numCols; c++) {
-	            board[r][c].setText(""); // Clear any text on the tiles
-	            board[r][c].setEnabled(true); // Re-enable all tiles
-	        }
-	    }
-   } 
-   @Override
-   public void update() {
-	   if(gameOver) {
-		   gameOverOverlay.update();
-	   }else if (gameWining) {
-		   gameWin.update();
-	   }
-	   
-   }
-@Override
-public void draw(Graphics g) {
-	// TODO Auto-generated method stub
-	
 }
-@Override
-public void mouseClicked(MouseEvent e) {
-	// TODO Auto-generated method stub
-	
-}
-@Override
-public void mousePressed(MouseEvent e) {
-	if(gameOver) {
-		gameOverOverlay.mousePressed(e);
-	}else if(gameWining) {
-		gameWin.mousePressed(e);
-	}
-	
-}
-@Override
-public void mouseReleased(MouseEvent e) {
-	if(gameOver) {
-		gameOverOverlay.mouseReleased(e);
-	}else if(gameWining) {
-		gameWin.mouseReleased(e);
-	}
-	
-}
-@Override
-public void mouseMoved(MouseEvent e) {
-	if(gameOver) {
-		gameOverOverlay.mouseMoved(e);
-	}else if(gameWining) {
-		gameWin.mouseMoved(e);
-	}
-	
-}
-@Override
-public void keyPressed(KeyEvent e) {
-	// TODO Auto-generated method stub
-	
-}
-@Override
-public void keyReleased(KeyEvent e) {
-	// TODO Auto-generated method stub
-	
-}
-    
-    }

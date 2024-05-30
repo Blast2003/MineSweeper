@@ -97,7 +97,7 @@ public class MouseInputs implements MouseListener, MouseMotionListener {
 			break;
 		case LEVEL1:
 			game.setVisible();
-			playing = new Playing(10,8,8);
+			playing = new Playing(3,10,10);
 			break;
 		case LEVEL2:
 			game.setVisible();
