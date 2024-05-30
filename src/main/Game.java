@@ -5,6 +5,10 @@ import java.awt.Graphics;
 import gamestates.Gamestate;
 import gamestates.Menu;
 import gamestates.Playing;
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 
 
 
@@ -124,8 +128,8 @@ public class Game implements Runnable {
 	}
 
 	
-	public void setVisible() {
-		gameWindow.setVisible(false);
+	public void setVisible(boolean v) {
+		gameWindow.setVisible(v);
 	}
 
 	
