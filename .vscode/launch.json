@@ -9,6 +9,13 @@
             "name": "MainClass",
             "request": "launch",
             "mainClass": "main.MainClass",
+            "projectName": "MineSweeper - Copy"
+        },
+        {
+            "type": "java",
+            "name": "MainClass",
+            "request": "launch",
+            "mainClass": "main.MainClass",
             "projectName": "DSA_PJ_fbedbed8"
         },
         {

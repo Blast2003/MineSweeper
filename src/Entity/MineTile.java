@@ -26,6 +26,11 @@ public class MineTile extends JButton {
 	public void setC(int c) {
 		this.c = c;
 	}
-    
 
+    @Override
+    public String toString() {
+        return "MineTile [r=" + r + ", c=" + c + "]";
+    }
+    
+	
 }

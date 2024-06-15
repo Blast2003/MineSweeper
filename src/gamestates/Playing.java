@@ -16,7 +16,7 @@ import ui.GameWin;
 public class Playing implements Statemethods{
 
     int tileSize = 60;
-    int numRows, numCols, boardWidth, boardHeight;
+    int numRows, numCols, boardWidth, boardHeight,flag;
     
     JFrame frame = new JFrame("Minesweeper");
     JLabel textLabel = new JLabel();
@@ -24,7 +24,7 @@ public class Playing implements Statemethods{
     JPanel boardPanel = new JPanel();
 
     private int mineCount;
-
+    // private int flag=(int)mineCount/2;
     private boolean isFirstClick;
     
     private int bombFound = 0;
@@ -52,9 +52,10 @@ public class Playing implements Statemethods{
         this.numCols = numC;
         boardWidth = numCols * tileSize;
         boardHeight = numRows * tileSize;
+        flag=(int)mineCount/2;
         isFirstClick = true;
         board = new MineTile[numRows][numCols];
-
+            
     	setMineCount(mineCount);
         // frame.setVisible(true);
         frame.setSize(boardWidth, boardHeight);
@@ -124,7 +125,10 @@ public class Playing implements Statemethods{
                         //right click
                         else if (e.getButton() == MouseEvent.BUTTON3) {
                             if (tile.getText() == "" && tile.isEnabled()) {
-                                tile.setText("🚩");
+                                
+                                setFlag(tile.getR(), tile.getC());   
+                                    
+
                             }
                             else if (tile.getText() == "🚩") {
                                 tile.setText("");
@@ -148,7 +152,36 @@ public class Playing implements Statemethods{
 
         // setMines();
     }
-
+    void setFlag(int r, int c){
+       
+        MineTile tile = board[r][c];
+        tile.setText("🚩");
+        System.out.println("Mines: "+mineCount);
+        System.out.println("Flag: "+flag);
+        flag--;
+        int count=countAdjacentMines(r,c);
+        System.out.println("Count: "+count);
+        for (int[] dir : directions) {
+            int newRow = r + dir[0];
+            int newCol = c + dir[1];
+            if (isTileOpen(newRow, newCol)) {
+                if (mineList.contains(tile)&& flag>=0) {
+                    // System.out.println("find boom");
+                    tile.setText("🕵️‍♀️");
+                    // System.out.println("Mine:" +);
+                    mineCount--;
+                    textLabel.setText("Minesweeper: " + Integer.toString(getMineCount()));
+                    
+                }
+            
+            }
+        }  
+        // }
+    }
+    private boolean isTileOpen(int r, int c) {
+        if (isOutOfBounds(r, c)) return false;
+        return !board[r][c].isEnabled();
+    }
     void setMines(int r, int c) {
         mineList = new ArrayList<MineTile>();
         int mineLeft = getMineCount();
@@ -163,13 +196,16 @@ public class Playing implements Statemethods{
             }
 
             MineTile tile = board[randR][randC]; 
+            
             if (!mineList.contains(tile)) {
                 mineList.add(tile);
+                System.out.println("Boom: "+tile);
                 mineLeft -= 1;
             }
         }
         isFirstClick = false; // set first click to false to start the game
     }
+    
 
     void revealMines() {
         for (int i = 0; i < mineList.size(); i++) {
@@ -263,7 +299,7 @@ public class Playing implements Statemethods{
                     {0, -1}, {0, 1},
                     {1, -1}, {1, 0}, {1, 1}
                 };
-
+                
                 for (int[] dir : directions) {
                     int newRow = row + dir[0];
                     int newCol = col + dir[1];
