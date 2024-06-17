@@ -126,6 +126,7 @@ public class Playing implements Statemethods{
                                 if (mineList.contains(tile)) {
                                     if (bombFound < remaningUndo) {
                                     	bombFound++;
+                                        // System.out.println("BOMB: " + bombFound);
                                         tile.setText("💣");
                                         tile.setEnabled(false);
                                         // UndoableTiles.clear(); // clear old list
@@ -441,7 +442,6 @@ public class Playing implements Statemethods{
             if (!undoStack.isEmpty()) { // only undo if there something to undo
                 remaningUndo--;
                 undoLabel.setText("Uno chance(s) remaining: " + remaningUndo);
-                if(bombFound > 0) bombFound--;
 
                 // for (MineTile t : UndoableTiles) {
 
@@ -460,7 +460,7 @@ public class Playing implements Statemethods{
                     tile.setText("");
                     tile.setEnabled(true);
                 }
-
+                // System.out.println(remaningUndo + " vs " + bombFound);
                 boolean over = remaningUndo < bombFound;
                 // for (int y = 0; y < numCols; y++) {
                 //     for (int x = 0; x < numCols; x++) {
