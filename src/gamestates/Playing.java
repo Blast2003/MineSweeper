@@ -23,8 +23,8 @@ public class Playing implements Statemethods{
     JPanel textPanel = new JPanel();
     JPanel boardPanel = new JPanel();
     
-    JLabel undoLabel = new JLabel();
-    JPanel undoPanel = new JPanel();
+    JLabel undoNSpyLabel = new JLabel();
+    JPanel undoNSpyPanel = new JPanel();
 
     private int mineCount;
     // private int flag=(int)mineCount/2;
@@ -46,6 +46,7 @@ public class Playing implements Statemethods{
     private Stack<MineTile> undoStack = new Stack<MineTile>();
     private Stack<Integer> tileCountPerMove = new Stack<Integer>();
     private int tileClickedPerMove = 0;
+
     
 
     int remaningUndo = 3;
@@ -81,15 +82,15 @@ public class Playing implements Statemethods{
         textPanel.add(textLabel);
         frame.add(textPanel, BorderLayout.NORTH);
 
-        undoLabel.setFont(new Font("Arial", Font.BOLD,15));
-        undoLabel.setHorizontalAlignment(JLabel.LEFT);
-        undoLabel.setText("Uno chance(s) remaining: " + remaningUndo);
-        undoLabel.setOpaque(true);
+        undoNSpyLabel.setFont(new Font("Arial", Font.BOLD,15));
+        undoNSpyLabel.setHorizontalAlignment(JLabel.LEFT);
+        undoNSpyLabel.setText("Uno chance(s) remaining: " + remaningUndo + "                                      Smart flag(s) remaning: " + flag);
+        undoNSpyLabel.setOpaque(true);
 
-        undoPanel.setLayout(new BorderLayout());
-        undoPanel.add(undoLabel);
-        frame.add(undoPanel, BorderLayout.SOUTH);
-
+        undoNSpyPanel.setLayout(new BorderLayout());
+        undoNSpyPanel.add(undoNSpyLabel);
+        frame.add(undoNSpyPanel, BorderLayout.SOUTH);
+    
         boardPanel.setLayout(new GridLayout(numRows, numCols)); //8x8
         // boardPanel.setBackground(Color.green);
         frame.add(boardPanel);
@@ -182,17 +183,18 @@ public class Playing implements Statemethods{
        
         MineTile tile = board[r][c];
         tile.setText("🚩");
-        System.out.println("Mines: "+mineCount);
-        System.out.println("Flag: "+flag);
-        flag--;
-        int count=countAdjacentMines(r,c);
-        System.out.println("Count: "+count);
+        // System.out.println("Mines: "+mineCount);
+        // System.out.println("Flag: "+flag);
+        if (flag >0) flag--;
+        // int count=countAdjacentMines(r,c);
+        // System.out.println("Count: "+count);
         outerloop:
         for (int[] dir : directions) {
             int newRow = r + dir[0];
             int newCol = c + dir[1];
             if (isTileOpen(newRow, newCol)) {
-                if (mineList.contains(tile)&& flag>=0) {
+                undoNSpyLabel.setText("Uno chance(s) remaining: " + remaningUndo + "                                      Smart flag(s) remaning: " + flag);
+                if (mineList.contains(tile)&& !(flag<=0)) {
                     // System.out.println("find boom");
                     tile.setText("🕵️‍♀️");
                     // System.out.println("Mine:" +);
@@ -442,7 +444,7 @@ public class Playing implements Statemethods{
         public void undoLastClick() {
             if (!undoStack.isEmpty()) { // only undo if there something to undo
                 remaningUndo--;
-                undoLabel.setText("Uno chance(s) remaining: " + remaningUndo);
+                undoNSpyLabel.setText("Uno chance(s) remaining: " + remaningUndo + "          Smart flag(s) remaning: " + flag);
 
                 // for (MineTile t : UndoableTiles) {
 

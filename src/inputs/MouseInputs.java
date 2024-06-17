@@ -8,12 +8,14 @@ import java.awt.event.MouseMotionListener;
 import gamestates.Gamestate;
 import gamestates.Playing;
 import main.GamePanel;
+import utilz.Constants;
 
 public class MouseInputs implements MouseListener, MouseMotionListener {
 
 	private Playing playing;
 	private Game game;
 	private GamePanel gamePanel;
+	// private Constants gameConstant;
 
 	public MouseInputs(GamePanel gamePanel, Game game) {
 		this.gamePanel = gamePanel; this.game = game;
@@ -97,11 +99,11 @@ public class MouseInputs implements MouseListener, MouseMotionListener {
 			break;
 		case LEVEL1:
 			game.setVisible();
-			playing = new Playing(3,10,10);
+			playing = new Playing(Constants.lv1MineCount,10,10);
 			break;
 		case LEVEL2:
 			game.setVisible();
-			playing = new Playing(25,10,10);
+			playing = new Playing(Constants.lv2MineCount,10,10);
 			break;
 		default:
 			break;
