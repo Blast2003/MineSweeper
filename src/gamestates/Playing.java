@@ -187,6 +187,7 @@ public class Playing implements Statemethods{
         flag--;
         int count=countAdjacentMines(r,c);
         System.out.println("Count: "+count);
+        outerloop:
         for (int[] dir : directions) {
             int newRow = r + dir[0];
             int newCol = c + dir[1];
@@ -197,7 +198,7 @@ public class Playing implements Statemethods{
                     // System.out.println("Mine:" +);
                     mineCount--;
                     textLabel.setText("Minesweeper: " + Integer.toString(getMineCount()));
-                    
+                    break outerloop;
                 }
             
             }
