@@ -22,6 +22,9 @@ public class Playing implements Statemethods{
     JLabel textLabel = new JLabel();
     JPanel textPanel = new JPanel();
     JPanel boardPanel = new JPanel();
+    
+    JLabel undoLabel = new JLabel();
+    JPanel undoPanel = new JPanel();
 
     private int mineCount;
     // private int flag=(int)mineCount/2;
@@ -31,13 +34,18 @@ public class Playing implements Statemethods{
 	private MineTile[][] board;
     private ArrayList<MineTile> mineList;
     private Random random = new Random();
-    private ArrayList<MineTile> UndoableTiles = new ArrayList<MineTile>();
+    // private ArrayList<MineTile> UndoableTiles = new ArrayList<MineTile>();
     private GameOver gameOverOverlay;
     private GameWin gameWin;
     int tilesClicked = 0; //goal is to click all tiles except the ones containing mines
 
     boolean gameOver = false;
     boolean gameWining  = false ;
+
+    //2 Stack to do undo
+    private Stack<MineTile> undoStack = new Stack<MineTile>();
+    private Stack<Integer> tileCountPerMove = new Stack<Integer>();
+    private int tileClickedPerMove = 0;
     
 
     int remaningUndo = 3;
@@ -72,6 +80,15 @@ public class Playing implements Statemethods{
         textPanel.setLayout(new BorderLayout());
         textPanel.add(textLabel);
         frame.add(textPanel, BorderLayout.NORTH);
+
+        undoLabel.setFont(new Font("Arial", Font.BOLD,15));
+        undoLabel.setHorizontalAlignment(JLabel.LEFT);
+        undoLabel.setText("Uno chance(s) remaining: " + remaningUndo);
+        undoLabel.setOpaque(true);
+
+        undoPanel.setLayout(new BorderLayout());
+        undoPanel.add(undoLabel);
+        frame.add(undoPanel, BorderLayout.SOUTH);
 
         boardPanel.setLayout(new GridLayout(numRows, numCols)); //8x8
         // boardPanel.setBackground(Color.green);
@@ -111,14 +128,21 @@ public class Playing implements Statemethods{
                                     	bombFound++;
                                         tile.setText("💣");
                                         tile.setEnabled(false);
-                                        UndoableTiles.clear(); // clear old list
-                                        UndoableTiles.add(tile); // add tile to list to undo
+                                        // UndoableTiles.clear(); // clear old list
+                                        // UndoableTiles.add(tile); // add tile to list to undo
+
+                                        if (!isFirstClick) {
+                                            undoStack.push(tile); //add tile just click to the undo stack
+                                            tileCountPerMove.push(1); //add tile count to stack for undo method
+                                        }
                                     }
                                     else revealMines();
                                 }
                                 else {
-                                    UndoableTiles.clear(); // clear old list
+                                    tileClickedPerMove =0; //refresh count integer for each move
+                                    // UndoableTiles.clear(); // clear old list
                                     checkMine(tile.getR(), tile.getC());
+                                    if (!isFirstClick) tileCountPerMove.push(tileClickedPerMove); //add tile count to stack for undo method
                                 }
                             }
                         }
@@ -140,6 +164,7 @@ public class Playing implements Statemethods{
                                 undoLastClick();
                             }
                         }
+                        if (isFirstClick) isFirstClick = false; // set first click to false to start the game
                     } 
                 });
 
@@ -203,7 +228,6 @@ public class Playing implements Statemethods{
                 mineLeft -= 1;
             }
         }
-        isFirstClick = false; // set first click to false to start the game
     }
     
 
@@ -284,8 +308,11 @@ public class Playing implements Statemethods{
             if (!tile.isEnabled()) continue;
 
             tile.setEnabled(false);
-            UndoableTiles.add(tile);
+            // UndoableTiles.add(tile);
             tilesClicked++;
+
+            tileClickedPerMove++; // increment number of tiles clicked in this
+            if (!isFirstClick) undoStack.add(tile); // add to undo stack for undo method
 
             int minesFound = countAdjacentMines(row, col);
             if (minesFound > 0) {
@@ -411,25 +438,40 @@ public class Playing implements Statemethods{
 
 
         public void undoLastClick() {
-            remaningUndo--;
-            if(bombFound > 0) bombFound--;
-            for (MineTile t : UndoableTiles) {
+            if (!undoStack.isEmpty()) { // only undo if there something to undo
+                remaningUndo--;
+                undoLabel.setText("Uno chance(s) remaining: " + remaningUndo);
+                if(bombFound > 0) bombFound--;
 
-                if (t.getText() == "💣" ) t.setText(""); // mine : hides it
-                else  tilesClicked--; // not mine: reduces the tileClicked counter
-                t.setEnabled(true);
-            }
+                // for (MineTile t : UndoableTiles) {
 
-            boolean over = false;
-            for (int y = 0; y < numCols; y++) {
-                for (int x = 0; x < numCols; x++) {
-                    if (board[x][y].getText() == "💣") {
-                        over = true;
+                //     if (t.getText() == "💣" ) t.setText(""); // mine : hides it
+                //     else  tilesClicked--; // not mine: reduces the tileClicked counter
+                //     t.setEnabled(true);
+                // }
+                int totalTileToUndo = tileCountPerMove.pop();
+                for (int i = 0; i < totalTileToUndo; i++) {
+                    MineTile tile = undoStack.pop();
+                    if (tile.getText().equals("💣")) {
+                        if (bombFound > 0) bombFound--;
+                    } else {
+                        tilesClicked--;
                     }
+                    tile.setText("");
+                    tile.setEnabled(true);
                 }
-            }
 
-            if (over) revealMines();
+                boolean over = remaningUndo < bombFound;
+                // for (int y = 0; y < numCols; y++) {
+                //     for (int x = 0; x < numCols; x++) {
+                //         if (board[x][y].getText() == "💣") {
+                //             over = true;
+                //         }
+                //     }
+                // }
+
+                if (over) revealMines();
+                }
         }
 
         public void resetLose() {
