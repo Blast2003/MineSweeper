@@ -10,6 +10,7 @@ import java.util.Stack;
 import javax.swing.*;
 
 import Entity.MineTile;
+import Entity.Move;
 import ui.GameOver;
 import ui.GameWin;
 
@@ -43,9 +44,7 @@ public class Playing implements Statemethods{
     boolean gameWining  = false ;
 
     //2 Stack to do undo
-    private Stack<MineTile> undoStack = new Stack<MineTile>();
-    private Stack<Integer> tileCountPerMove = new Stack<Integer>();
-    private int tileClickedPerMove = 0;
+    private Stack<Move> undoStack = new Stack<>();
 
     
 
@@ -117,56 +116,44 @@ public class Playing implements Statemethods{
                         MineTile tile = (MineTile) e.getSource();
                         //left click
                         if (e.getButton() == MouseEvent.BUTTON1) {
-                            //check if it the first click
-                            if (isFirstClick) {     // if it is, set creat mines
+                            if (isFirstClick) {
                                 tile.setText("");
                                 setMines(tile.getR(), tile.getC());
                             }
 
-                            if (tile.getText() == "") {
+                            if (tile.getText().equals("")) {
                                 if (mineList.contains(tile)) {
                                     if (bombFound < remaningUndo) {
-                                    	bombFound++;
-                                        // System.out.println("BOMB: " + bombFound);
+                                        bombFound++;
                                         tile.setText("💣");
                                         tile.setEnabled(false);
-                                        // UndoableTiles.clear(); // clear old list
-                                        // UndoableTiles.add(tile); // add tile to list to undo
 
                                         if (!isFirstClick) {
-                                            undoStack.push(tile); //add tile just click to the undo stack
-                                            tileCountPerMove.push(1); //add tile count to stack for undo method
+                                            undoStack.push(new Move(tile, "", true, tilesClicked)); // save state
                                         }
+                                    } else {
+                                        revealMines();
                                     }
-                                    else revealMines();
-                                }
-                                else {
-                                    tileClickedPerMove =0; //refresh count integer for each move
-                                    // UndoableTiles.clear(); // clear old list
+                                } else {
+                                    if (!isFirstClick) {
+                                        undoStack.push(new Move(tile, tile.getText(), tile.isEnabled(), tilesClicked)); // save state
+                                    }
                                     checkMine(tile.getR(), tile.getC());
-                                    if (!isFirstClick) tileCountPerMove.push(tileClickedPerMove); //add tile count to stack for undo method
                                 }
                             }
-                        }
-                        //right click
-                        else if (e.getButton() == MouseEvent.BUTTON3) {
-                            if (tile.getText() == "" && tile.isEnabled()) {
-                                
-                                setFlag(tile.getR(), tile.getC());   
-                                    
-
-                            }
-                            else if (tile.getText() == "🚩") {
+                        } else if (e.getButton() == MouseEvent.BUTTON3) {
+                            if (tile.getText().equals("") && tile.isEnabled()) {
+                                setFlag(tile.getR(), tile.getC());
+                            } else if (tile.getText().equals("🚩")) {
                                 tile.setText("");
                             }
-                        }
-
-                        else if (e.getButton() == MouseEvent.BUTTON2) { // Dùng tạm Button 2 (Nút giữa) cho redo
+                        } else if (e.getButton() == MouseEvent.BUTTON2) {
                             if (remaningUndo > 0) {
                                 undoLastClick();
                             }
                         }
-                        if (isFirstClick) isFirstClick = false; // set first click to false to start the game
+
+                        if (isFirstClick) isFirstClick = false;
                     } 
                 });
 
@@ -315,8 +302,7 @@ public class Playing implements Statemethods{
             // UndoableTiles.add(tile);
             tilesClicked++;
 
-            tileClickedPerMove++; // increment number of tiles clicked in this
-            if (!isFirstClick) undoStack.add(tile); // add to undo stack for undo method
+
 
             int minesFound = countAdjacentMines(row, col);
             if (minesFound > 0) {
@@ -441,41 +427,32 @@ public class Playing implements Statemethods{
 
 
 
-        public void undoLastClick() {
-            if (!undoStack.isEmpty()) { // only undo if there something to undo
-                remaningUndo--;
-                undoNSpyLabel.setText("Uno chance(s) remaining: " + remaningUndo + "          Smart flag(s) remaning: " + flag);
+        
+    	public void undoLastClick() {
+        if (!undoStack.isEmpty()) { // only undo if there is something to undo
+       
+            Move lastMove = undoStack.pop();
+        
+            MineTile tile = lastMove.tile;
+            tile.setText(lastMove.previousText);
+            tile.setEnabled(lastMove.wasEnabled);
 
-                // for (MineTile t : UndoableTiles) {
+            if (lastMove.previousText.equals("💣")) {
+                bombFound--;
+            } else {
+                tilesClicked = lastMove.previousTilesClicked;
+            }
 
-                //     if (t.getText() == "💣" ) t.setText(""); // mine : hides it
-                //     else  tilesClicked--; // not mine: reduces the tileClicked counter
-                //     t.setEnabled(true);
-                // }
-                int totalTileToUndo = tileCountPerMove.pop();
-                for (int i = 0; i < totalTileToUndo; i++) {
-                    MineTile tile = undoStack.pop();
-                    if (tile.getText().equals("💣")) {
-                        if (bombFound > 0) bombFound--;
-                    } else {
-                        tilesClicked--;
-                    }
-                    tile.setText("");
-                    tile.setEnabled(true);
-                }
-                // System.out.println(remaningUndo + " vs " + bombFound);
-                boolean over = remaningUndo < bombFound;
-                // for (int y = 0; y < numCols; y++) {
-                //     for (int x = 0; x < numCols; x++) {
-                //         if (board[x][y].getText() == "💣") {
-                //             over = true;
-                //         }
-                //     }
-                // }
-
-                if (over) revealMines();
-                }
+            
+            if ( remaningUndo < bombFound--) {
+                revealMines();
+            }
+            remaningUndo--;
+            undoNSpyLabel.setText("Uno chance(s) remaining: " + remaningUndo + "                                      Smart flag(s) remaning: " + flag);
         }
+    }
+
+
 
         public void resetLose() {
         for (int r = 0; r < numRows; r++) {
