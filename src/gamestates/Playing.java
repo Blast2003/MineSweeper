@@ -42,9 +42,10 @@ public class Playing implements Statemethods{
     boolean gameOver = false;
     boolean gameWining  = false ;
 
-    //2 Stack to do undo
+    //2 Stack used in undo function
     private Stack<MineTile> undoStack = new Stack<MineTile>();
     private Stack<Integer> tileCountPerMove = new Stack<Integer>();
+
     private int tileClickedPerMove = 0;
 
     
@@ -445,13 +446,6 @@ public class Playing implements Statemethods{
             if (!undoStack.isEmpty()) { // only undo if there something to undo
                 remaningUndo--;
                 undoNSpyLabel.setText("Uno chance(s) remaining: " + remaningUndo + "          Smart flag(s) remaning: " + flag);
-
-                // for (MineTile t : UndoableTiles) {
-
-                //     if (t.getText() == "💣" ) t.setText(""); // mine : hides it
-                //     else  tilesClicked--; // not mine: reduces the tileClicked counter
-                //     t.setEnabled(true);
-                // }
                 int totalTileToUndo = tileCountPerMove.pop();
                 for (int i = 0; i < totalTileToUndo; i++) {
                     MineTile tile = undoStack.pop();
@@ -463,16 +457,7 @@ public class Playing implements Statemethods{
                     tile.setText("");
                     tile.setEnabled(true);
                 }
-                // System.out.println(remaningUndo + " vs " + bombFound);
                 boolean over = remaningUndo < bombFound;
-                // for (int y = 0; y < numCols; y++) {
-                //     for (int x = 0; x < numCols; x++) {
-                //         if (board[x][y].getText() == "💣") {
-                //             over = true;
-                //         }
-                //     }
-                // }
-
                 if (over) revealMines();
                 }
         }

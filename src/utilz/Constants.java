@@ -7,7 +7,7 @@ public class Constants {
 	public static final float GRAVITY = 0.04f * Game.SCALE;
 	public static final int ANI_SPEED = 25;
 
-	public static final int lv1MineCount = 5;
+	public static final int lv1MineCount = 10;
 	public static final int lv2MineCount = 20;
 	
 	public static class UI {
